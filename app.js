@@ -143,6 +143,11 @@
         <span class="rank-bar"><i style="width:${x.pct}%;background:${x.color}"></i></span>
         <span class="rank-pct">${x.pct}%</span>
       </div>`).join('');
+    const dims = r.dims && r.dims.length ? `<div class="p-sec"><h3>你的四维职场画像</h3>${r.dims.map(d => `
+      <div class="dim">
+        <div class="dim-top"><span class="dim-name">${esc(d.name)}</span><span class="dim-label">${esc(d.label)}</span></div>
+        <div class="dim-bar">${d.parts.filter(p => p.pct > 0).map(p => `<i class="${p.level === d.level ? 'on' : ''}" style="flex:${p.pct}">${p.pct >= 15 ? esc(p.level) + ' ' + p.pct + '%' : ''}</i>`).join('')}</div>
+      </div>`).join('')}</div>` : '';
     const rel = (label, p, why) => `
       <div class="rel">
         <div class="seal sm" style="background:${p.color}">${esc(p.seal)}</div>
@@ -161,10 +166,12 @@
         <div class="p-title">${esc(t.title)}</div>
         <div class="p-quote">「${esc(t.quote)}」</div>
         <div class="p-tags">${t.tags.map(s => `<span>${esc(s)}</span>`).join('')}</div>
-        <div class="p-rarity">约 <b>${t.rarity}%</b> 的打工人和你同款</div>
+        ${r.total >= 100 ? `<div class="p-rarity">已有 ${r.total} 位打工人测过，<b>${(r.same / r.total * 100).toFixed(1)}%</b> 和你同款</div>` : ''}
       </div>
       <div class="p-sec"><div class="p-summary">“${esc(t.summary)}”</div><p>${esc(t.desc)}</p></div>
+      ${t.bio ? `<div class="p-sec"><h3>人物小传 · ${esc(t.name)}</h3><p>${esc(t.bio)}</p></div>` : ''}
       <div class="p-sec"><h3>${esc(t.name)}的名场面</h3>${(t.stories || []).map(x => `<div class="story"><div class="story-t">${esc(x.t)}</div><p>${esc(x.d)}</p></div>`).join('')}</div>
+      ${dims}
       <div class="p-sec"><h3>古人匹配度 · 前 8 名</h3>${bars}</div>
       <div class="p-sec two">
         <div><h3>你的职场优势</h3>${list(t.strengths)}</div>

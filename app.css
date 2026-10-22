@@ -147,3 +147,13 @@ body {
   #app { padding-top: 40px; }
   .p-sec.two { grid-template-columns: 1fr 1fr; }
 }
+
+/* 四维画像 */
+.dim { margin: 12px 0 14px; }
+.dim-top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: 6px; }
+.dim-name { font-weight: 700; }
+.dim-label { color: var(--c, #8c2f24); font-size: 14px; font-weight: 700; }
+.dim-bar { display: flex; height: 22px; border-radius: 11px; overflow: hidden; background: #efe6d6; }
+.dim-bar i { font-style: normal; font-size: 12px; line-height: 22px; text-align: center; color: #6b5a44; background: #e6dac4; white-space: nowrap; overflow: hidden; }
+.dim-bar i + i { border-left: 2px solid #f7f1e6; }
+.dim-bar i.on { background: var(--c, #8c2f24); color: #fff; font-weight: 700; }
