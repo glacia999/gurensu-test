@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>天赋职业测试 · 密码管理后台</title>
+<link rel="stylesheet" href="app.css">
+<style>
+  #app { max-width: 720px; }
+  h1 { font-size: 26px; margin: 0 0 16px; }
+  .card { margin-bottom: 16px; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .grid .input { font-size: 16px; letter-spacing: 0; text-transform: none; font-family: var(--sans); }
+  textarea { width: 100%; height: 160px; font-family: ui-monospace, Menlo, monospace; font-size: 15px; border: 1px solid var(--line); border-radius: 10px; padding: 10px; background: #fff; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th, td { text-align: left; padding: 8px 6px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  td code { font-size: 15px; }
+  .stats { display: flex; gap: 16px; flex-wrap: wrap; color: var(--ink-2); font-size: 14px; margin-bottom: 10px; }
+  .stats b { color: var(--ink); font-size: 18px; }
+  .small { min-height: 34px; width: auto; font-size: 13px; padding: 0 10px; }
+  .table-wrap { overflow-x: auto; }
+</style>
+</head>
+<body>
+<div id="app">
+  <h1>天赋职业测试 · 密码后台</h1>
+
+  <div class="card" id="loginCard">
+    <label class="label" for="key">管理密钥</label>
+    <input class="input" id="key" type="password" style="font-size:16px;letter-spacing:0;text-transform:none">
+    <p class="error" id="err"></p>
+    <button class="btn primary" id="loginBtn">进入后台</button>
+  </div>
+
+  <div id="panel" hidden>
+    <div class="card">
+      <label class="label">批量生成密码（每个密码可测 3 次）</label>
+      <div class="grid">
+        <input class="input" id="count" type="number" min="1" max="1000" value="20" placeholder="数量">
+        <input class="input" id="note" placeholder="备注，如：10月抖音订单">
+      </div>
+      <button class="btn primary" id="genBtn" style="margin-top:12px">生成</button>
+      <div id="newBox" hidden style="margin-top:14px">
+        <label class="label">新生成的密码（可直接复制发给买家）</label>
+        <textarea id="newCodes" readonly></textarea>
+        <button class="btn" id="copyNew" style="margin-top:8px">复制全部</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="row" style="justify-content:space-between;align-items:center;margin-bottom:10px">
+        <label class="label" style="margin:0">全部密码</label>
+        <button class="btn small" id="csvBtn" style="flex:none">导出 Excel(CSV)</button>
+      </div>
+      <div class="stats" id="stats"></div>
+      <input class="input" id="search" placeholder="搜索密码或备注" style="font-size:15px;letter-spacing:0;height:42px;margin-bottom:8px">
+      <div class="table-wrap"><table><thead><tr><th>密码</th><th>已用</th><th>剩余</th><th>备注</th><th>生成时间</th><th></th></tr></thead><tbody id="rows"></tbody></table></div>
+    </div>
+  </div>
+</div>
+<script src="config.js"></script>
+<script src="content.js"></script>
+<script src="api.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+let KEY = '';
+try { KEY = localStorage.getItem('adminKey') || ''; } catch (e) {}
+let all = [], uses = 3;
+async function load() {
+  const d = await API.admin.list(KEY);
+  all = d.codes; uses = d.uses;
+  const used = all.filter(c => c.used > 0).length, done = all.filter(c => c.used >= uses).length;
+  const tests = all.reduce((s, c) => s + c.used, 0);
+  $('stats').innerHTML = `<span>密码总数 <b>${all.length}</b></span><span>已使用 <b>${used}</b></span><span>已用完 <b>${done}</b></span><span>累计测试 <b>${tests}</b> 次</span>`;
+  render();
+}
+function render() {
+  const q = $('search').value.trim().toUpperCase();
+  const list = all.filter(c => !q || c.code.includes(q) || c.note.toUpperCase().includes(q)).slice(0, 500);
+  $('rows').innerHTML = list.map(c => `<tr><td><code>${c.code}</code></td><td>${c.used}</td><td>${uses - c.used}</td><td>${c.note.replace(/</g, '&lt;')}</td><td>${new Date(c.createdAt).toLocaleDateString('zh-CN')}</td><td>${c.used ? `<button class="btn small" data-reset="${c.code}">重置</button>` : ''}</td></tr>`).join('');
+}
+$('loginBtn').onclick = async () => {
+  KEY = $('key').value.trim();
+  try { await load(); try { localStorage.setItem('adminKey', KEY); } catch (e) {} $('loginCard').hidden = true; $('panel').hidden = false; }
+  catch (e) { $('err').textContent = e.message; }
+};
+$('genBtn').onclick = async () => {
+  try {
+    const codes = await API.admin.create(KEY, $('count').value, $('note').value);
+    $('newCodes').value = codes.join('\n'); $('newBox').hidden = false; load();
+  } catch (e) { alert(e.message); }
+};
+$('copyNew').onclick = () => { $('newCodes').select(); document.execCommand('copy'); $('copyNew').textContent = '已复制'; setTimeout(() => $('copyNew').textContent = '复制全部', 1500); };
+$('csvBtn').onclick = () => {
+  const rows = all.map(c => [c.code, c.used, uses - c.used, '"' + c.note.replace(/"/g, '""') + '"', new Date(c.createdAt).toLocaleString('zh-CN')].join(','));
+  const blob = new Blob(['\uFEFF密码,已用次数,剩余次数,备注,生成时间\n' + rows.join('\n')], { type: 'text/csv;charset=utf-8' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'passwords.csv'; a.click();
+};
+$('search').oninput = render;
+$('rows').onclick = async e => {
+  const code = e.target.dataset.reset;
+  if (code && confirm(`把密码 ${code} 的次数重置为 ${uses} 次？`)) {
+    try { await API.admin.reset(KEY, code); load(); } catch (err) { alert(err.message); }
+  }
+};
+if (KEY) { $('key').value = KEY; $('loginBtn').click(); }
+</script>
+</body>
+</html>
