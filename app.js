@@ -137,7 +137,7 @@
     $('remainHint').textContent = remaining != null ? `当前密码还可以测试 ${remaining} 次` : '';
     const date = new Date(r.at);
     const list = arr => '<ul>' + arr.map(s => `<li>${esc(s)}</li>`).join('') + '</ul>';
-    const bars = r.ranking.map(x => `
+    const bars = r.ranking.slice(0, 8).map(x => `
       <div class="rank${x.key === t.key ? ' top' : ''}">
         <span class="rank-name">${esc(x.name)}</span>
         <span class="rank-bar"><i style="width:${x.pct}%;background:${x.color}"></i></span>
@@ -164,12 +164,12 @@
         <div class="p-rarity">约 <b>${t.rarity}%</b> 的打工人和你同款</div>
       </div>
       <div class="p-sec"><div class="p-summary">“${esc(t.summary)}”</div><p>${esc(t.desc)}</p></div>
-      <div class="p-sec"><h3>古人匹配度</h3>${bars}</div>
+      <div class="p-sec"><h3>${esc(t.name)}的名场面</h3>${(t.stories || []).map(x => `<div class="story"><div class="story-t">${esc(x.t)}</div><p>${esc(x.d)}</p></div>`).join('')}</div>
+      <div class="p-sec"><h3>古人匹配度 · 前 8 名</h3>${bars}</div>
       <div class="p-sec two">
         <div><h3>你的职场优势</h3>${list(t.strengths)}</div>
         <div><h3>需要留意的坑</h3>${list(t.pitfalls)}</div>
       </div>
-      <div class="p-sec"><p class="p-scene">${esc(t.scene)}</p></div>
       <div class="p-sec"><h3>职场关系</h3>${rel('最佳搭档', t.partner, t.partnerWhy)}${rel('职场天敌', t.enemy, t.enemyWhy)}</div>
       <div class="p-sec"><h3>${esc(t.name)}给你的职业建议</h3>${list(t.advice)}<p class="p-jobs"><b>适合的方向：</b>${esc(t.jobs)}</p></div>
       <div class="p-foot">${esc(r.meta.title)} · ${esc(r.meta.subtitle)}<br>${esc(r.meta.footer)}</div>`;

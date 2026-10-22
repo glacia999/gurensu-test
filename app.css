@@ -105,6 +105,10 @@ body {
 .p-sec li { margin: 4px 0; }
 .p-sec.two { display: grid; grid-template-columns: 1fr; gap: 16px; }
 .p-summary { font-family: var(--serif); font-size: 18px; font-weight: 700; color: var(--c); margin-bottom: 10px; }
+.story { background: #f3e7d4; border-radius: 10px; padding: 12px 14px; margin-top: 10px; }
+.story:first-of-type { margin-top: 0; }
+.story-t { font-family: var(--serif); font-weight: 700; color: var(--c); margin-bottom: 4px; }
+.story p { font-size: 14px; line-height: 1.75; color: #4a3d30; }
 .p-scene { background: #f3e7d4; border-radius: 10px; padding: 12px 14px !important; color: #5a4a38; font-size: 14px; }
 .p-jobs { margin-top: 10px !important; font-size: 14px; color: var(--ink-2); }
 .rank { display: flex; align-items: center; gap: 10px; margin: 7px 0; font-size: 14px; }
